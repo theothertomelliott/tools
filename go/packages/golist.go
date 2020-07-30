@@ -40,19 +40,19 @@ type goTooOldError struct {
 type responseDeduper struct {
 	seenRoots    map[string]bool
 	seenPackages map[string]*Package
-	dr           *driverResponse
+	dr           *DriverResponse
 }
 
 func newDeduper() *responseDeduper {
 	return &responseDeduper{
-		dr:           &driverResponse{},
+		dr:           &DriverResponse{},
 		seenRoots:    map[string]bool{},
 		seenPackages: map[string]*Package{},
 	}
 }
 
 // addAll fills in r with a driverResponse.
-func (r *responseDeduper) addAll(dr *driverResponse) {
+func (r *responseDeduper) addAll(dr *DriverResponse) {
 	for _, pkg := range dr.Packages {
 		r.addPackage(pkg)
 	}
@@ -124,7 +124,7 @@ func (state *golistState) mustGetEnv() map[string]string {
 // goListDriver uses the go list command to interpret the patterns and produce
 // the build system package structure.
 // See driver for more details.
-func goListDriver(cfg *Config, patterns ...string) (*driverResponse, error) {
+func goListDriver(cfg *Config, patterns ...string) (*DriverResponse, error) {
 	// Make sure that any asynchronous go commands are killed when we return.
 	parentCtx := cfg.Context
 	if parentCtx == nil {
@@ -318,7 +318,7 @@ func (state *golistState) runContainsQueries(response *responseDeduper, queries 
 
 // adhocPackage attempts to load or construct an ad-hoc package for a given
 // query, if the original call to the driver produced inadequate results.
-func (state *golistState) adhocPackage(pattern, query string) (*driverResponse, error) {
+func (state *golistState) adhocPackage(pattern, query string) (*DriverResponse, error) {
 	response, err := state.createDriverResponse(query)
 	if err != nil {
 		return nil, err
@@ -404,7 +404,7 @@ func otherFiles(p *jsonPackage) [][]string {
 
 // createDriverResponse uses the "go list" command to expand the pattern
 // words and return a response for the specified packages.
-func (state *golistState) createDriverResponse(words ...string) (*driverResponse, error) {
+func (state *golistState) createDriverResponse(words ...string) (*DriverResponse, error) {
 	// go list uses the following identifiers in ImportPath and Imports:
 	//
 	// 	"p"			-- importable package or main (command)
@@ -426,7 +426,7 @@ func (state *golistState) createDriverResponse(words ...string) (*driverResponse
 	pkgs := make(map[string]*Package)
 	additionalErrors := make(map[string][]Error)
 	// Decode the JSON and convert it to Package form.
-	var response driverResponse
+	var response DriverResponse
 	for dec := json.NewDecoder(buf); dec.More(); {
 		p := new(jsonPackage)
 		if err := dec.Decode(p); err != nil {

@@ -64,7 +64,7 @@ func findExternalDriver(cfg *Config) driver {
 			return nil
 		}
 	}
-	return func(cfg *Config, words ...string) (*driverResponse, error) {
+	return func(cfg *Config, words ...string) (*DriverResponse, error) {
 		req, err := json.Marshal(driverRequest{
 			Mode:       cfg.Mode,
 			Env:        cfg.Env,
@@ -92,7 +92,7 @@ func findExternalDriver(cfg *Config) driver {
 			fmt.Fprintf(os.Stderr, "%s stderr: <<%s>>\n", cmdDebugStr(cmd, words...), stderr)
 		}
 
-		var response driverResponse
+		var response DriverResponse
 		if err := json.Unmarshal(buf.Bytes(), &response); err != nil {
 			return nil, err
 		}
