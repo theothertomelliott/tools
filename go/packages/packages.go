@@ -231,7 +231,7 @@ type DriverResponse struct {
 // provided for convenient display of all errors.
 func Load(cfg *Config, patterns ...string) ([]*Package, error) {
 	l := newLoader(cfg)
-	response, err := DefaultDriver(&l.Config, patterns...)
+	response, err := defaultDriver(&l.Config, patterns...)
 	if err != nil {
 		return nil, err
 	}
@@ -239,11 +239,18 @@ func Load(cfg *Config, patterns ...string) ([]*Package, error) {
 	return l.refine(response.Roots, response.Packages...)
 }
 
-// DefaultDriver is a driver that implements go/packages' fallback behavior.
+// DefaultDriver wraps defaultDriver in a similar manner to
+// Load, but without refining roots.
+func DefaultDriver(cfg *Config, patterns ...string) (*DriverResponse, error) {
+	l := newLoader(cfg)
+	return defaultDriver(&l.Config, patterns...)
+}
+
+// defaultDriver is a driver that implements go/packages' fallback behavior.
 // It will try to request to an external driver, if one exists. If there's
 // no external driver, or the driver returns a response with NotHandled set,
 // defaultDriver will fall back to the go list driver.
-func DefaultDriver(cfg *Config, patterns ...string) (*DriverResponse, error) {
+func defaultDriver(cfg *Config, patterns ...string) (*DriverResponse, error) {
 	driver := findExternalDriver(cfg)
 	if driver == nil {
 		driver = goListDriver
